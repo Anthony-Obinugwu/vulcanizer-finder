@@ -1,6 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Drawer } from 'vaul';
+import { Analytics } from '@vercel/analytics/react';
 import AnimatedBackground from './components/AnimatedBackground';
 import { TireRepairIcon } from './components/Icons';
 
@@ -148,19 +149,23 @@ function App() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#060B18] relative z-0">
-        <AnimatedBackground />
-        <div className="relative z-10 flex flex-col items-center">
-          <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
-          <p className="text-lg font-medium text-slate-300">Locating nearest vulcanizers...</p>
+      <>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-[#060B18] relative z-0">
+          <AnimatedBackground />
+          <div className="relative z-10 flex flex-col items-center">
+            <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
+            <p className="text-lg font-medium text-slate-300">Locating nearest vulcanizers...</p>
+          </div>
         </div>
-      </div>
+        <Analytics />
+      </>
     );
   }
 
   if (location && vulcanizers !== null) {
     return (
-      <div className="flex flex-col h-screen bg-slate-50 dark:bg-slate-950 md:flex-row overflow-hidden relative">
+      <>
+        <div className="flex flex-col h-screen bg-slate-50 dark:bg-slate-950 md:flex-row overflow-hidden relative">
         <Suspense fallback={
           <div className="absolute inset-0 flex items-center justify-center bg-[#060B18] z-50">
             <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
@@ -228,7 +233,9 @@ function App() {
             </Drawer.Root>
           </div>
         </Suspense>
-      </div>
+        </div>
+        <Analytics />
+      </>
     );
   }
 
@@ -322,6 +329,7 @@ function App() {
           </Drawer.Content>
         </Drawer.Portal>
       </Drawer.Root>
+      <Analytics />
     </div>
   );
 }
