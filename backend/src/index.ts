@@ -10,19 +10,23 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 // Restrict CORS to specific frontend domain in production
-const allowedOrigins = [
-  process.env.FRONTEND_URL || 'http://localhost:5173'
-];
+// We remove any trailing slashes just in case it was accidentally included in the dashboard
+const rawFrontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+const frontendUrl = rawFrontendUrl.replace(/\/$/, '');
+const allowedOrigins = [frontendUrl];
 
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      var msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
     }
-    return callback(null, true);
+    
+    console.error(`[CORS BLOCK] Origin '${origin}' is not allowed. Expected: '${frontendUrl}'`);
+    var msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+    return callback(new Error(msg), false);
   }
 }));
 
