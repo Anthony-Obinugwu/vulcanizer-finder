@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .animate-dash {
+    animation: dash 30s linear infinite;
+  }
+  .animate-dash-reverse {
+    animation: dash-reverse 35s linear infinite;
+  }
+  .animate-drift {
+    animation: drift 15s ease-in-out infinite alternate;
+  }
+  .animate-drift-slow {
+    animation: drift 25s ease-in-out infinite alternate-reverse;
+  }
+  .animate-drift-fast {
+    animation: drift 10s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes dash {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes dash-reverse {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: 1000; }
+}
+
+@keyframes drift {
+  0% { transform: translate(0, 0); opacity: 0.3; }
+  50% { opacity: 0.8; }
+  100% { transform: translate(60px, -40px); opacity: 0.3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-dash,
+  .animate-dash-reverse,
+  .animate-drift,
+  .animate-drift-slow,
+  .animate-drift-fast,
+  circle animate {
+    animation: none !important;
+  }
+}
