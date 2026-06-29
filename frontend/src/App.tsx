@@ -275,7 +275,7 @@ function App() {
 
           <div className="w-full mt-6">
             <p className="text-slate-500 text-xs italic">
-              We only use your location to find vulcanizers near you. No sign up. No hassle.
+              We only use your location to find vulcanizers near you. It's not stored, so relax.
             </p>
           </div>
         </div>
@@ -300,29 +300,29 @@ function App() {
             <div className="p-4 bg-slate-900 rounded-t-[32px] flex-1 overflow-y-auto">
               <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-slate-700 mb-8" />
               <div className="max-w-md mx-auto px-4 pb-8 text-slate-300">
+                <p className="text-xs text-slate-400 italic mb-8 leading-relaxed border-l-2 border-blue-900/50 pl-3">
+                  "For we are God's handiwork, created in Christ Jesus to do good works, God prepared in advance for us to do." - Ephesians 2:10.
+                </p>
                 <h2 className="text-2xl font-bold text-white mb-4">About the Project</h2>
                 <p className="mb-8 leading-relaxed">
-                  This project is an open-source initiative dedicated to helping everyday drivers easily locate road-side vulcanizers in emergency situations. It was built by blah blah blah... the point of me building this small solution was to show people that you can build something very useful and for the sole reason it can help your neighbour is enough of a reason to embark on that project. Afterall what is money if not a measure of something's value.
-                </p>
-                <p className="mb-8 leading-relaxed">
-                  I created this project on a sunday night after thinking about it the week prior, and the verse of the day just happens to be "For we are God's handiwork, created in Christ Jesus to do good works, God prepared in advance for us to do." - Ephesians 2:10. For all those who use this solution, and for those who will not God bless you.
+                  Pump Me is an open-source project that helps drivers quickly locate nearby roadside vulcanizers during tire emergencies. It was built to prove that some of the most meaningful software isn't measured by revenue, but by the people it helps.
                 </p>
                 <h3 className="text-lg font-semibold text-white mb-4">Contributors</h3>
                 <ul className="space-y-6">
                   <li className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-bold text-lg">P1</div>
+                    <img src="/Hitobashira.svg" alt="Hitobashiraxl" className="w-12 h-12 rounded-full object-cover bg-slate-800 border border-slate-700" />
                     <div>
                       <p className="text-white font-medium">Hitobashiraxl</p>
                       <p className="text-sm text-slate-500">Software Developer / Youtuber</p>
                     </div>
                   </li>
-                  {/* <li className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-green-400 font-bold text-lg">P2</div>
+                  <li className="flex items-center gap-4">
+                    <img src="/Myke.svg" alt="BadboyMyke" className="w-12 h-12 rounded-full object-cover bg-slate-800 border border-slate-700" />
                     <div>
-                      <p className="text-white font-medium">[Placeholder Name 2]</p>
-                      <p className="text-sm text-slate-500">[Role / Contribution]</p>
+                      <p className="text-white font-medium">BadboyMyke</p>
+                      <p className="text-sm text-slate-500">Frontend Developer / Entrepreneur</p>
                     </div>
-                  </li> */}
+                  </li>
                 </ul>
               </div>
             </div>
