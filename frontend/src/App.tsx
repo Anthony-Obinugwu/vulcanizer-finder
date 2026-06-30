@@ -154,7 +154,7 @@ function App() {
           <AnimatedBackground />
           <div className="relative z-10 flex flex-col items-center">
             <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
-            <p className="text-lg font-medium text-slate-300">Locating nearest vulcanizers...</p>
+            <p className="text-lg font-medium text-slate-300">Chill these npcs are on it...</p>
           </div>
         </div>
         <Analytics />
@@ -166,73 +166,73 @@ function App() {
     return (
       <>
         <div className="flex flex-col h-screen bg-slate-50 dark:bg-slate-950 md:flex-row overflow-hidden relative">
-        <Suspense fallback={
-          <div className="absolute inset-0 flex items-center justify-center bg-[#060B18] z-50">
-            <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
-          </div>
-        }>
-          {/* Full screen map on mobile, half screen on desktop */}
-          <div className="flex-1 relative h-full w-full z-0">
-            <VulcanizerMap
-              userLocation={location}
-              vulcanizers={vulcanizers}
-              activeRoute={activeRoute}
-              routingMode={routingMode}
-              routeDetails={routeDetails}
-              routeDestination={routeDestination}
-              isDark={isDark}
-            />
-          </div>
+          <Suspense fallback={
+            <div className="absolute inset-0 flex items-center justify-center bg-[#060B18] z-50">
+              <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
+            </div>
+          }>
+            {/* Full screen map on mobile, half screen on desktop */}
+            <div className="flex-1 relative h-full w-full z-0">
+              <VulcanizerMap
+                userLocation={location}
+                vulcanizers={vulcanizers}
+                activeRoute={activeRoute}
+                routingMode={routingMode}
+                routeDetails={routeDetails}
+                routeDestination={routeDestination}
+                isDark={isDark}
+              />
+            </div>
 
-          {/* Desktop List (hidden on mobile) */}
-          <div className="hidden md:flex w-[400px] lg:w-[480px] bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 h-full overflow-y-auto shadow-xl z-10 flex-col">
-            <VulcanizerList
-              vulcanizers={vulcanizers}
-              onShowRoute={(dest) => fetchRoute(dest, routingMode)}
-              onCancelRoute={handleCancelRoute}
-              routingMode={routingMode}
-              onRoutingModeChange={handleRoutingModeChange}
-              routeDestination={routeDestination}
-            />
-          </div>
+            {/* Desktop List (hidden on mobile) */}
+            <div className="hidden md:flex w-[400px] lg:w-[480px] bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 h-full overflow-y-auto shadow-xl z-10 flex-col">
+              <VulcanizerList
+                vulcanizers={vulcanizers}
+                onShowRoute={(dest) => fetchRoute(dest, routingMode)}
+                onCancelRoute={handleCancelRoute}
+                routingMode={routingMode}
+                onRoutingModeChange={handleRoutingModeChange}
+                routeDestination={routeDestination}
+              />
+            </div>
 
-          {/* Mobile Bottom Sheet Drawer */}
-          <div className="md:hidden">
-            <Drawer.Root
-              snapPoints={[0.2, 0.5, 0.9]}
-              activeSnapPoint={snap}
-              setActiveSnapPoint={(val) => setSnap(val as number)}
-              open={true}
-              dismissible={false}
-              modal={false}
-              disablePreventScroll={true}
-            >
-              <Drawer.Portal>
-                <Drawer.Overlay className="fixed inset-0 bg-black/5 dark:bg-black/40 pointer-events-none md:hidden" />
-                <Drawer.Content
-                  className="bg-white dark:bg-slate-900 flex flex-col rounded-t-3xl h-[90dvh] fixed bottom-0 left-0 right-0 z-50 md:hidden shadow-[0_-10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.5)] outline-none border border-t-slate-200 dark:border-slate-800"
-                >
-                  <div className="p-4 bg-white dark:bg-slate-900 rounded-t-3xl flex-shrink-0 cursor-grab active:cursor-grabbing">
-                    <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-slate-300 dark:bg-slate-700 mb-1" />
-                  </div>
-                  <div className="flex-1 flex flex-col min-h-0">
-                    <VulcanizerList
-                      vulcanizers={vulcanizers}
-                      onShowRoute={(dest) => {
-                        fetchRoute(dest, routingMode);
-                        setSnap(0.2); // Snap down when they click to see the route on map
-                      }}
-                      onCancelRoute={handleCancelRoute}
-                      routingMode={routingMode}
-                      onRoutingModeChange={handleRoutingModeChange}
-                      routeDestination={routeDestination}
-                    />
-                  </div>
-                </Drawer.Content>
-              </Drawer.Portal>
-            </Drawer.Root>
-          </div>
-        </Suspense>
+            {/* Mobile Bottom Sheet Drawer */}
+            <div className="md:hidden">
+              <Drawer.Root
+                snapPoints={[0.2, 0.5, 0.9]}
+                activeSnapPoint={snap}
+                setActiveSnapPoint={(val) => setSnap(val as number)}
+                open={true}
+                dismissible={false}
+                modal={false}
+                disablePreventScroll={true}
+              >
+                <Drawer.Portal>
+                  <Drawer.Overlay className="fixed inset-0 bg-black/5 dark:bg-black/40 pointer-events-none md:hidden" />
+                  <Drawer.Content
+                    className="bg-white dark:bg-slate-900 flex flex-col rounded-t-3xl h-[90dvh] fixed bottom-0 left-0 right-0 z-50 md:hidden shadow-[0_-10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.5)] outline-none border border-t-slate-200 dark:border-slate-800"
+                  >
+                    <div className="p-4 bg-white dark:bg-slate-900 rounded-t-3xl flex-shrink-0 cursor-grab active:cursor-grabbing">
+                      <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-slate-300 dark:bg-slate-700 mb-1" />
+                    </div>
+                    <div className="flex-1 flex flex-col min-h-0">
+                      <VulcanizerList
+                        vulcanizers={vulcanizers}
+                        onShowRoute={(dest) => {
+                          fetchRoute(dest, routingMode);
+                          setSnap(0.2); // Snap down when they click to see the route on map
+                        }}
+                        onCancelRoute={handleCancelRoute}
+                        routingMode={routingMode}
+                        onRoutingModeChange={handleRoutingModeChange}
+                        routeDestination={routeDestination}
+                      />
+                    </div>
+                  </Drawer.Content>
+                </Drawer.Portal>
+              </Drawer.Root>
+            </div>
+          </Suspense>
         </div>
         <Analytics />
       </>
