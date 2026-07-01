@@ -38,7 +38,7 @@ export default function BottomSheet({
   const dragControls = useDragControls();
 
   // Handle Drag End physics
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const offset = info.offset.y;
     const velocity = info.velocity.y;
 
