@@ -295,7 +295,7 @@ function App() {
 
       <Drawer.Root open={showAbout} onOpenChange={setShowAbout}>
         <Drawer.Portal>
-          <Drawer.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" />
+          <Drawer.Overlay className="fixed inset-0 bg-black/80 z-50" />
           <Drawer.Content className="bg-slate-900 flex flex-col rounded-t-[32px] h-[70vh] mt-24 fixed bottom-0 left-0 right-0 z-50 border-t border-slate-800">
             <div className="p-4 bg-slate-900 rounded-t-[32px] flex-1 overflow-y-auto">
               <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-slate-700 mb-8" />
