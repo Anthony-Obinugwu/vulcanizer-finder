@@ -1,10 +1,10 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
-import { Drawer } from 'vaul';
 import { Analytics } from '@vercel/analytics/react';
 import { toast } from 'sonner';
 import AnimatedBackground from './components/AnimatedBackground';
 import { TireRepairIcon } from './components/Icons';
+import BottomSheet from './components/BottomSheet';
 
 // Code-split the heavy map and list components so they don't block the landing page load
 const VulcanizerMap = lazy(() => import('./components/VulcanizerMap'));
@@ -33,7 +33,7 @@ function App() {
   const [routeDetails, setRouteDetails] = useState<{ duration: number; distance: number } | null>(null);
   const [routingMode, setRoutingMode] = useState<'driving' | 'walking'>('driving');
   const [routeDestination, setRouteDestination] = useState<Vulcanizer | null>(null);
-  const [snap, setSnap] = useState<number>(0.5);
+  const [snap, setSnap] = useState<number>(0.2);
   const [isDark, setIsDark] = useState<boolean>(() => window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   // Preload the heavy map library in the background 1 second after the landing page is interactive
@@ -197,39 +197,25 @@ function App() {
 
             {/* Mobile Bottom Sheet Drawer */}
             <div className="md:hidden">
-              <Drawer.Root
+              <BottomSheet
+                isOpen={true}
                 snapPoints={[0.2, 0.5, 0.9]}
-                activeSnapPoint={snap}
-                setActiveSnapPoint={(val) => setSnap(val as number)}
-                open={true}
-                dismissible={false}
-                modal={false}
-                disablePreventScroll={true}
+                currentSnap={snap}
+                onSnapChange={setSnap}
+                hideBackdrop={true}
               >
-                <Drawer.Portal>
-                  <Drawer.Overlay className="fixed inset-0 bg-black/5 dark:bg-black/40 pointer-events-none md:hidden" />
-                  <Drawer.Content
-                    className="bg-white dark:bg-slate-900 flex flex-col rounded-t-3xl h-[90dvh] fixed bottom-0 left-0 right-0 z-50 md:hidden shadow-[0_-10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.5)] outline-none border border-t-slate-200 dark:border-slate-800"
-                  >
-                    <div className="p-4 bg-white dark:bg-slate-900 rounded-t-3xl flex-shrink-0 cursor-grab active:cursor-grabbing">
-                      <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-slate-300 dark:bg-slate-700 mb-1" />
-                    </div>
-                    <div className="flex-1 flex flex-col min-h-0">
-                      <VulcanizerList
-                        vulcanizers={vulcanizers}
-                        onShowRoute={(dest) => {
-                          fetchRoute(dest, routingMode);
-                          setSnap(0.2); // Snap down when they click to see the route on map
-                        }}
-                        onCancelRoute={handleCancelRoute}
-                        routingMode={routingMode}
-                        onRoutingModeChange={handleRoutingModeChange}
-                        routeDestination={routeDestination}
-                      />
-                    </div>
-                  </Drawer.Content>
-                </Drawer.Portal>
-              </Drawer.Root>
+                <VulcanizerList
+                  vulcanizers={vulcanizers}
+                  onShowRoute={(dest) => {
+                    fetchRoute(dest, routingMode);
+                    setSnap(0.2); // Snap down when they click to see the route on map
+                  }}
+                  onCancelRoute={handleCancelRoute}
+                  routingMode={routingMode}
+                  onRoutingModeChange={handleRoutingModeChange}
+                  routeDestination={routeDestination}
+                />
+              </BottomSheet>
             </div>
           </Suspense>
         </div>
@@ -288,42 +274,34 @@ function App() {
         </p>
       </div>
 
-      <Drawer.Root open={showAbout} onOpenChange={setShowAbout}>
-        <Drawer.Portal>
-          <Drawer.Overlay className="fixed inset-0 bg-black/80 z-50" />
-          <Drawer.Content className="bg-slate-900 flex flex-col rounded-t-[32px] h-[70vh] mt-24 fixed bottom-0 left-0 right-0 z-50 border-t border-slate-800">
-            <div className="p-4 bg-slate-900 rounded-t-[32px] flex-1 overflow-y-auto">
-              <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-slate-700 mb-8" />
-              <div className="max-w-md mx-auto px-4 pb-8 text-slate-300">
-                <p className="text-xs text-slate-400 italic mb-8 leading-relaxed border-l-2 border-blue-900/50 pl-3">
-                  "For we are God's handiwork, created in Christ Jesus to do good works, God prepared in advance for us to do." - Ephesians 2:10.
-                </p>
-                <h2 className="text-2xl font-bold text-white mb-4">About the Project</h2>
-                <p className="mb-8 leading-relaxed">
-                  Pump Me is an open-source project that helps drivers quickly locate nearby roadside vulcanizers during tire emergencies. It was built to prove that some of the most meaningful software isn't measured by revenue, but by the people it helps.
-                </p>
-                <h3 className="text-lg font-semibold text-white mb-4">Contributors</h3>
-                <ul className="space-y-6">
-                  <li className="flex items-center gap-4">
-                    <img src="/Hitobashira.svg" alt="Hitobashiraxl" className="w-12 h-12 rounded-full object-cover bg-slate-800 border border-slate-700" />
-                    <div>
-                      <p className="text-white font-medium">Hitobashiraxl</p>
-                      <p className="text-sm text-slate-500">Software Developer / Youtuber</p>
-                    </div>
-                  </li>
-                  <li className="flex items-center gap-4">
-                    <img src="/Myke.svg" alt="BadboyMyke" className="w-12 h-12 rounded-full object-cover bg-slate-800 border border-slate-700" />
-                    <div>
-                      <p className="text-white font-medium">BadboyMyke</p>
-                      <p className="text-sm text-slate-500">Frontend Developer / Entrepreneur</p>
-                    </div>
-                  </li>
-                </ul>
+      <BottomSheet isOpen={showAbout} onClose={() => setShowAbout(false)}>
+        <div className="max-w-md mx-auto px-4 pb-8 text-slate-300 pt-4">
+          <p className="text-xs text-slate-400 italic mb-8 leading-relaxed border-l-2 border-blue-900/50 pl-3">
+            "For we are God's handiwork, created in Christ Jesus to do good works, God prepared in advance for us to do." - Ephesians 2:10.
+          </p>
+          <h2 className="text-2xl font-bold text-white mb-4">About the Project</h2>
+          <p className="mb-8 leading-relaxed">
+            Pump Me is an open-source project that helps drivers quickly locate nearby roadside vulcanizers during tire emergencies. It was built to prove that some of the most meaningful software isn't measured by revenue, but by the people it helps.
+          </p>
+          <h3 className="text-lg font-semibold text-white mb-4">Contributors</h3>
+          <ul className="space-y-6">
+            <li className="flex items-center gap-4">
+              <img src="/Hitobashira.svg" alt="Hitobashiraxl" className="w-12 h-12 rounded-full object-cover bg-slate-800 border border-slate-700" />
+              <div>
+                <p className="text-white font-medium">Hitobashiraxl</p>
+                <p className="text-sm text-slate-500">Software Developer / Youtuber</p>
               </div>
-            </div>
-          </Drawer.Content>
-        </Drawer.Portal>
-      </Drawer.Root>
+            </li>
+            <li className="flex items-center gap-4">
+              <img src="/Myke.svg" alt="BadboyMyke" className="w-12 h-12 rounded-full object-cover bg-slate-800 border border-slate-700" />
+              <div>
+                <p className="text-white font-medium">BadboyMyke</p>
+                <p className="text-sm text-slate-500">Frontend Developer / Entrepreneur</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </BottomSheet>
       <Analytics />
     </div>
   );
