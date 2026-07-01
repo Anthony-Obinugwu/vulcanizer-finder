@@ -2,6 +2,7 @@ import { useState, useEffect, lazy, Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Drawer } from 'vaul';
 import { Analytics } from '@vercel/analytics/react';
+import { toast } from 'sonner';
 import AnimatedBackground from './components/AnimatedBackground';
 import { TireRepairIcon } from './components/Icons';
 
@@ -27,7 +28,6 @@ function App() {
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [vulcanizers, setVulcanizers] = useState<Vulcanizer[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [showAbout, setShowAbout] = useState(false);
   const [activeRoute, setActiveRoute] = useState<any>(null);
   const [routeDetails, setRouteDetails] = useState<{ duration: number; distance: number } | null>(null);
@@ -102,7 +102,7 @@ function App() {
       if (data.error) throw new Error(data.error);
       setVulcanizers(data || []);
     } catch (err: any) {
-      setError(err.message);
+      toast.error(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -110,9 +110,8 @@ function App() {
 
   const requestLocation = () => {
     setIsLoading(true);
-    setError(null);
     if (!navigator.geolocation) {
-      setError('Geolocation not supported. Using default location.');
+      toast.error('Geolocation not supported. Using default location.');
       setLocation({ lat: 6.5244, lng: 3.3792 });
       fetchNearby(6.5244, 3.3792);
       return;
@@ -138,7 +137,7 @@ function App() {
           }
         } catch (ipErr) {
           console.error('IP Fallback error:', ipErr);
-          setError(`Location access failed completely. Using default location (Lagos) for demo.`);
+          toast.error(`Location access failed completely. Using default location (Lagos) for demo.`);
           setLocation({ lat: 6.5244, lng: 3.3792 });
           fetchNearby(6.5244, 3.3792);
         }
@@ -268,10 +267,6 @@ function App() {
           >
             Allow Location Access
           </button>
-
-          {error && (
-            <p className="text-red-400 mt-4 text-sm font-medium">{error}</p>
-          )}
 
           <div className="w-full mt-6">
             <p className="text-slate-500 text-xs italic">

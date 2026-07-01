@@ -70,6 +70,49 @@ app.get('/api/vulcanizers/nearby', async (req, res) => {
   }
 });
 
+app.post('/api/vulcanizers', async (req, res) => {
+  try {
+    const adminPin = req.headers['x-admin-pin'];
+    
+    if (!process.env.ADMIN_PIN) {
+      return res.status(500).json({ error: 'Server misconfiguration: ADMIN_PIN not set.' });
+    }
+
+    if (adminPin !== process.env.ADMIN_PIN) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid Admin PIN' });
+    }
+
+    const { business_name, owner_name, phone, latitude, longitude, address, services } = req.body;
+
+    if (!business_name || latitude === undefined || longitude === undefined) {
+      return res.status(400).json({ error: 'Missing required fields: business_name, latitude, or longitude.' });
+    }
+
+    const { data, error } = await supabase.from('vulcanizers').insert([{
+      business_name,
+      owner_name,
+      phone,
+      latitude,
+      longitude,
+      address,
+      services: services || [],
+      is_open: true,
+      verified: false,
+      rating: 0.0
+    }]).select();
+
+    if (error) {
+      console.error('Supabase Insert Error:', error);
+      return res.status(500).json({ error: 'Failed to insert into database.' });
+    }
+
+    res.status(201).json({ success: true, data });
+  } catch (error) {
+    console.error('Server Error:', error);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Backend API running at http://localhost:${port}`);
 });
