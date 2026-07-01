@@ -101,6 +101,7 @@ export default function BottomSheet({
             drag="y"
             dragConstraints={{ top: 0 }}
             dragElastic={0.2}
+            dragMomentum={false}
             dragControls={dragControls}
             dragListener={false}
             onDragEnd={handleDragEnd}
