@@ -333,7 +333,7 @@ function App() {
           </div>
 
           <h1 className="text-[2.25rem] font-extrabold text-white mb-4 tracking-tight leading-tight">
-            A databank of service providers
+            A map of service providers
           </h1>
 
           <p className="text-slate-400 mb-8 text-lg leading-relaxed">
