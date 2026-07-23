@@ -15,7 +15,12 @@ const port = process.env.PORT || 3001;
 // We remove any trailing slashes just in case it was accidentally included in the dashboard
 const rawFrontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 const frontendUrl = rawFrontendUrl.replace(/\/$/, '');
-const allowedOrigins = [frontendUrl];
+const allowedOrigins = [
+  frontendUrl,
+  'https://www.thesenpcs.com',
+  'https://thesenpcs.com',
+  'https://vulcanizer-finder.vercel.app'
+];
 
 app.use(cors({
   origin: function (origin, callback) {
