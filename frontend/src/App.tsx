@@ -43,6 +43,8 @@ function App() {
   const [activeMobility, setActiveMobility] = useState<string>('all');
   const [snap, setSnap] = useState<number>(0.2);
   const [isDark, setIsDark] = useState<boolean>(() => window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const [contributors, setContributors] = useState<any[]>([]);
+  const [loadingContributors, setLoadingContributors] = useState(false);
 
   // Preload the heavy map library in the background 1 second after the landing page is interactive
   useEffect(() => {
@@ -59,6 +61,17 @@ function App() {
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
   }, []);
+
+  useEffect(() => {
+    if (showAbout && contributors.length === 0 && !loadingContributors) {
+      setLoadingContributors(true);
+      fetch(`${import.meta.env.VITE_API_URL}/api/contributors`)
+        .then(res => res.json())
+        .then(data => setContributors(data))
+        .catch(err => console.error('Failed to fetch contributors:', err))
+        .finally(() => setLoadingContributors(false));
+    }
+  }, [showAbout]);
 
   // Intentionally blanked out duplicated useEffect
 
@@ -377,22 +390,28 @@ function App() {
             Artisan is an open-source project that helps people quickly locate nearby vulcanizers, tailors, and cobblers during emergencies. It was built to prove that some of the most meaningful software isn't measured by revenue, but by the people it helps.
           </p>
           <h3 className="text-lg font-semibold text-white mb-4">Contributors</h3>
-          <ul className="space-y-6">
-            <li className="flex items-center gap-4">
-              <img src="/Hitobashira.svg" alt="Hitobashiraxl" className="w-12 h-12 rounded-full object-cover bg-slate-800 border border-slate-700" />
-              <div>
-                <p className="text-white font-medium">Hitobashiraxl</p>
-                <p className="text-sm text-slate-500">Software Developer / Youtuber</p>
-              </div>
-            </li>
-            <li className="flex items-center gap-4">
-              <img src="/Myke.svg" alt="BadboyMyke" className="w-12 h-12 rounded-full object-cover bg-slate-800 border border-slate-700" />
-              <div>
-                <p className="text-white font-medium">BadboyMyke</p>
-                <p className="text-sm text-slate-500">Frontend Developer / Entrepreneur</p>
-              </div>
-            </li>
-          </ul>
+          
+          {loadingContributors ? (
+            <div className="flex justify-center py-4">
+              <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+            </div>
+          ) : (
+            <ul className="space-y-6">
+              {contributors.length === 0 ? (
+                <li className="text-slate-500 italic text-sm">No contributors listed yet.</li>
+              ) : (
+                contributors.map(c => (
+                  <li key={c.id} className="flex items-center gap-4">
+                    <img src={c.image_url} alt={c.name} className="w-12 h-12 rounded-full object-cover bg-slate-800 border border-slate-700" />
+                    <div>
+                      <p className="text-white font-medium">{c.name}</p>
+                      <p className="text-sm text-slate-500">{c.role}</p>
+                    </div>
+                  </li>
+                ))
+              )}
+            </ul>
+          )}
         </div>
       </BottomSheet>
       <Analytics />

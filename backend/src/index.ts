@@ -39,16 +39,44 @@ app.use(cors({
   }
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 // Rate limiter for the Admin creation route (max 5 requests per 15 minutes)
 const adminRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
-  message: { error: 'Too many requests from this IP, please try again after 15 minutes' },
+  max: 50, // Increased for dashboard usage
+  message: { error: 'Too many admin requests from this IP, please try again after 15 minutes' },
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+const authenticateAdmin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const adminPin = req.headers['x-admin-pin'] as string | undefined;
+
+  if (!process.env.ADMIN_PIN) {
+    return res.status(500).json({ error: 'Server misconfiguration: ADMIN_PIN not set.' });
+  }
+
+  if (!adminPin || adminPin.length !== process.env.ADMIN_PIN.length) {
+    return res.status(401).json({ error: 'Unauthorized: Invalid Admin PIN' });
+  }
+
+  try {
+    const isMatch = crypto.timingSafeEqual(
+      Buffer.from(adminPin),
+      Buffer.from(process.env.ADMIN_PIN)
+    );
+
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid Admin PIN' });
+    }
+
+    next();
+  } catch (error) {
+    console.error('Auth Error:', error);
+    res.status(500).json({ error: 'Auth Internal error.', details: error });
+  }
+};
 
 const supabaseUrl = process.env.SUPABASE_URL || '';
 // Use the service role key to bypass RLS since we verify the admin pin in our backend
@@ -96,27 +124,8 @@ app.get('/api/artisans/nearby', async (req, res) => {
   }
 });
 
-app.post('/api/artisans', adminRateLimiter, async (req, res) => {
+app.post('/api/artisans', adminRateLimiter, authenticateAdmin, async (req, res) => {
   try {
-    const adminPin = req.headers['x-admin-pin'] as string | undefined;
-
-    if (!process.env.ADMIN_PIN) {
-      return res.status(500).json({ error: 'Server misconfiguration: ADMIN_PIN not set.' });
-    }
-
-    if (!adminPin || adminPin.length !== process.env.ADMIN_PIN.length) {
-      return res.status(401).json({ error: 'Unauthorized: Invalid Admin PIN' });
-    }
-
-    const isMatch = crypto.timingSafeEqual(
-      Buffer.from(adminPin),
-      Buffer.from(process.env.ADMIN_PIN)
-    );
-
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Unauthorized: Invalid Admin PIN' });
-    }
-
     const { business_name, owner_name, phone, latitude, longitude, address, services, category, mobility_type, sound_signal, hotspots, rating } = req.body;
 
     const parsedLat = parseFloat(latitude);
@@ -179,6 +188,117 @@ app.post('/api/artisans', adminRateLimiter, async (req, res) => {
   } catch (error) {
     console.error('Server Error:', error);
     res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+// Admin Dashboard Routes
+app.get('/api/artisans/all', authenticateAdmin, async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('artisans').select('*');
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    console.error('All Artisans Error:', error);
+    res.status(500).json({ error: 'Internal server error.', details: error });
+  }
+});
+
+app.put('/api/artisans/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { business_name, owner_name, phone, address, services, category, mobility_type, sound_signal, rating, is_open } = req.body;
+    
+    const { data, error } = await supabase.from('artisans')
+      .update({ business_name, owner_name, phone, address, services, category, mobility_type, sound_signal, rating: rating !== undefined ? parseFloat(rating) : undefined, is_open })
+      .eq('id', id)
+      .select().single();
+      
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update artisan.' });
+  }
+});
+
+app.delete('/api/artisans/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase.from('artisans').delete().eq('id', id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete artisan.' });
+  }
+});
+
+// Storage Route
+app.post('/api/upload', authenticateAdmin, async (req, res) => {
+  try {
+    const { base64Data, fileName, contentType } = req.body;
+    if (!base64Data || !fileName || !contentType) {
+      return res.status(400).json({ error: 'Missing required fields: base64Data, fileName, contentType' });
+    }
+
+    // Remove the data:image/...;base64, prefix if it exists
+    const base64Clean = base64Data.replace(/^data:image\/\w+;base64,/, '').replace(/^data:image\/svg\+xml;base64,/, '');
+    const buffer = Buffer.from(base64Clean, 'base64');
+
+    // Create a unique filename
+    const uniqueFileName = `${Date.now()}-${fileName}`;
+
+    const { data, error } = await supabase.storage
+      .from('contributors')
+      .upload(uniqueFileName, buffer, {
+        contentType,
+        upsert: false
+      });
+
+    if (error) throw error;
+
+    const { data: publicUrlData } = supabase.storage
+      .from('contributors')
+      .getPublicUrl(uniqueFileName);
+
+    res.json({ success: true, url: publicUrlData.publicUrl });
+  } catch (error) {
+    console.error('Upload Error:', error);
+    res.status(500).json({ error: 'Failed to upload image.' });
+  }
+});
+
+// Contributors Routes
+app.get('/api/contributors', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('contributors').select('*').order('created_at', { ascending: true });
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+app.post('/api/contributors', authenticateAdmin, async (req, res) => {
+  try {
+    const { name, role, image_url } = req.body;
+    if (!name || !role || !image_url) {
+      return res.status(400).json({ error: 'Missing required fields: name, role, image_url' });
+    }
+    const { data, error } = await supabase.from('contributors').insert([{ name, role, image_url }]).select().single();
+    if (error) throw error;
+    res.status(201).json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to add contributor.' });
+  }
+});
+
+app.delete('/api/contributors/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase.from('contributors').delete().eq('id', id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete contributor.' });
   }
 });
 
