@@ -18,6 +18,8 @@ const frontendUrl = rawFrontendUrl.replace(/\/$/, '');
 const allowedOrigins = [
   frontendUrl,
   'https://www.thesenpcs.com',
+  'https://www.thesenpcs.ng',
+  'https://thesenpcs.ng',
   'https://thesenpcs.com',
   'https://vulcanizer-finder.vercel.app'
 ];
@@ -26,11 +28,11 @@ app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
+
     if (allowedOrigins.indexOf(origin) !== -1) {
       return callback(null, true);
     }
-    
+
     console.error(`[CORS BLOCK] Origin '${origin}' is not allowed. Expected: '${frontendUrl}'`);
     var msg = 'The CORS policy for this site does not allow access from the specified Origin.';
     return callback(new Error(msg), false);
@@ -65,7 +67,7 @@ app.get('/api/artisans/nearby', async (req, res) => {
 
     const latitude = parseFloat(lat as string);
     const longitude = parseFloat(lng as string);
-    
+
     if (isNaN(latitude) || isNaN(longitude)) {
       return res.status(400).json({ error: 'Invalid lat or lng. Must be numbers.' });
     }
@@ -97,7 +99,7 @@ app.get('/api/artisans/nearby', async (req, res) => {
 app.post('/api/artisans', adminRateLimiter, async (req, res) => {
   try {
     const adminPin = req.headers['x-admin-pin'] as string | undefined;
-    
+
     if (!process.env.ADMIN_PIN) {
       return res.status(500).json({ error: 'Server misconfiguration: ADMIN_PIN not set.' });
     }
@@ -147,11 +149,11 @@ app.post('/api/artisans', adminRateLimiter, async (req, res) => {
 
     if (mobility_type === 'MOBILE' && hotspots && Array.isArray(hotspots) && hotspots.length > 0) {
       const hotspotsToInsert = [];
-      
+
       for (const h of hotspots) {
         const hLat = parseFloat(h.lat);
         const hLng = parseFloat(h.lng);
-        
+
         if (!isNaN(hLat) && !isNaN(hLng) && h.location_name && h.start_time && h.end_time) {
           hotspotsToInsert.push({
             artisan_id: artisanData.id,
@@ -163,12 +165,12 @@ app.post('/api/artisans', adminRateLimiter, async (req, res) => {
           });
         }
       }
-      
+
       if (hotspotsToInsert.length > 0) {
         const { error: hotspotError } = await supabase.from('artisan_hotspots').insert(hotspotsToInsert);
-        
+
         if (hotspotError) {
-           console.error('Supabase Hotspot Insert Error:', hotspotError);
+          console.error('Supabase Hotspot Insert Error:', hotspotError);
         }
       }
     }
