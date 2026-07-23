@@ -329,7 +329,7 @@ function App() {
 
           <div className="flex items-center justify-center text-3xl font-bold tracking-tight mb-8">
             {/* <span className="text-white">pump&nbsp;</span> */}
-            <span className="text-[#3b82f6]">Artisian</span>
+            <span className="text-[#3b82f6]">Artisan</span>
           </div>
 
           <h1 className="text-[2.25rem] font-extrabold text-white mb-4 tracking-tight leading-tight">
@@ -349,7 +349,7 @@ function App() {
 
           <div className="w-full mt-6">
             <p className="text-slate-500 text-xs italic">
-              We only use your location to find artisians near you. It's not stored, so relax.
+              We only use your location to find artisans near you. It's not stored, so relax.
             </p>
           </div>
         </div>
@@ -374,7 +374,7 @@ function App() {
           </p>
           <h2 className="text-2xl font-bold text-white mb-4">About the Project</h2>
           <p className="mb-8 leading-relaxed">
-            Artisian is an open-source project that helps people quickly locate nearby vulcanizers, tailors, and cobblers during emergencies. It was built to prove that some of the most meaningful software isn't measured by revenue, but by the people it helps.
+            Artisan is an open-source project that helps people quickly locate nearby vulcanizers, tailors, and cobblers during emergencies. It was built to prove that some of the most meaningful software isn't measured by revenue, but by the people it helps.
           </p>
           <h3 className="text-lg font-semibold text-white mb-4">Contributors</h3>
           <ul className="space-y-6">
