@@ -1,3 +1,5 @@
+import type { ReactElement } from 'react';
+
 export const IconAll = ({ className = '' }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 16" className={className}>
     <path fill="currentColor" d="M7.5 7a2.5 2.5 0 0 1 0-5a2.5 2.5 0 0 1 0 5m0-4C6.67 3 6 3.67 6 4.5S6.67 6 7.5 6S9 5.33 9 4.5S8.33 3 7.5 3" />
@@ -36,7 +38,7 @@ export const IconBarber = ({ className = '' }: { className?: string }) => (
   </svg>
 );
 
-export const CATEGORY_ICONS: Record<string, JSX.Element> = {
+export const CATEGORY_ICONS: Record<string, ReactElement> = {
   all: <IconAll className="w-5 h-5" />,
   vulcanizer: <IconVulcanizer className="w-5 h-5" />,
   tailor: <IconTailor className="w-5 h-5" />,
@@ -45,7 +47,7 @@ export const CATEGORY_ICONS: Record<string, JSX.Element> = {
   barber: <IconBarber className="w-5 h-5" />
 };
 
-export const CATEGORY_ICONS_LARGE: Record<string, JSX.Element> = {
+export const CATEGORY_ICONS_LARGE: Record<string, ReactElement> = {
   all: <IconAll className="w-6 h-6 text-slate-300" />,
   vulcanizer: <IconVulcanizer className="w-6 h-6 text-blue-400" />,
   tailor: <IconTailor className="w-6 h-6 text-purple-400" />,

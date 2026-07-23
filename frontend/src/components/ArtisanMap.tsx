@@ -1,7 +1,7 @@
 import { useMemo, useState, useRef, useEffect } from 'react';
 // @ts-ignore
 import Map, { Marker, Popup, Source, Layer } from 'react-map-gl/mapbox';
-import { Navigation, Plus, Minus, LocateFixed, Info, X } from 'lucide-react';
+import { LocateFixed, Info, X } from 'lucide-react';
 import { UserPinIcon } from './Icons';
 import { CATEGORY_ICONS_LARGE } from './CategoryIcons';
 import type { Artisan } from '../App';
@@ -19,13 +19,7 @@ interface ArtisanMapProps {
   onPinClick?: (artisan: Artisan) => void;
 }
 
-const CATEGORY_EMOJIS: Record<string, string> = {
-  vulcanizer: '🛞',
-  tailor: '✂️',
-  cobbler: '👞',
-  nail_cutter: '💅',
-  barber: '💈'
-};
+
 
 export default function ArtisanMap({ userLocation, artisans, activeRoute, routingMode, routeDetails, routeDestination, isDark, selectedArtisan, onPinClick }: ArtisanMapProps) {
   const [mobileRoute, setMobileRoute] = useState<any>(null);
