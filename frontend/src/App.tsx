@@ -1,16 +1,16 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MapPin } from 'lucide-react';
 import { Analytics } from '@vercel/analytics/react';
 import { toast } from 'sonner';
 import AnimatedBackground from './components/AnimatedBackground';
-import { TireRepairIcon } from './components/Icons';
+import { CATEGORY_ICONS } from './components/CategoryIcons';
 import BottomSheet from './components/BottomSheet';
 
 // Code-split the heavy map and list components so they don't block the landing page load
-const VulcanizerMap = lazy(() => import('./components/VulcanizerMap'));
-const VulcanizerList = lazy(() => import('./components/VulcanizerList'));
+const ArtisanMap = lazy(() => import('./components/ArtisanMap'));
+const ArtisanList = lazy(() => import('./components/ArtisanList'));
 
-export type Vulcanizer = {
+export type Artisan = {
   id: string;
   business_name: string;
   owner_name: string;
@@ -22,25 +22,33 @@ export type Vulcanizer = {
   rating: number;
   services: string[];
   distance_km: number;
+  category: string;
+  mobility_type: string;
+  sound_signal: string | null;
+  hotspots: any[];
 };
 
 function App() {
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [vulcanizers, setVulcanizers] = useState<Vulcanizer[] | null>(null);
+  const [artisans, setArtisans] = useState<Artisan[] | null>(null);
   const [showAbout, setShowAbout] = useState(false);
   const [activeRoute, setActiveRoute] = useState<any>(null);
   const [routeDetails, setRouteDetails] = useState<{ duration: number; distance: number } | null>(null);
   const [routingMode, setRoutingMode] = useState<'driving' | 'walking'>('driving');
-  const [routeDestination, setRouteDestination] = useState<Vulcanizer | null>(null);
+  const [routeDestination, setRouteDestination] = useState<Artisan | null>(null);
+  const [selectedArtisanId, setSelectedArtisanId] = useState<string | null>(null);
+
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [activeMobility, setActiveMobility] = useState<string>('all');
   const [snap, setSnap] = useState<number>(0.2);
   const [isDark, setIsDark] = useState<boolean>(() => window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   // Preload the heavy map library in the background 1 second after the landing page is interactive
   useEffect(() => {
     const timer = setTimeout(() => {
-      import('./components/VulcanizerMap');
-      import('./components/VulcanizerList');
+      import('./components/ArtisanMap');
+      import('./components/ArtisanList');
     }, 1000);
     return () => clearTimeout(timer);
   }, []);
@@ -52,16 +60,9 @@ function App() {
     return () => mediaQuery.removeEventListener('change', handler);
   }, []);
 
-  // Preload the heavy map library in the background 1 second after the landing page is interactive
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      import('./components/VulcanizerMap');
-      import('./components/VulcanizerList');
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
+  // Intentionally blanked out duplicated useEffect
 
-  const fetchRoute = async (dest: Vulcanizer, mode: 'driving' | 'walking') => {
+  const fetchRoute = async (dest: Artisan, mode: 'driving' | 'walking') => {
     if (!location) return;
     try {
       const res = await fetch(
@@ -94,19 +95,30 @@ function App() {
     }
   };
 
-  const fetchNearby = async (lat: number, lng: number) => {
+  const handlePinClick = (artisan: Artisan) => {
+    setSelectedArtisanId(artisan.id);
+    setSnap(0.5); // Snap drawer up
+  };
+
+  const fetchNearby = async (lat: number, lng: number, category = activeCategory, mobility = activeMobility) => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/vulcanizers/nearby?lat=${lat}&lng=${lng}&radius=10`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/artisans/nearby?lat=${lat}&lng=${lng}&radius=15&category=${category}&mobility=${mobility}`);
       if (!res.ok) throw new Error('Failed to fetch from backend. Ensure DB migrations are run.');
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      setVulcanizers(data || []);
+      setArtisans(data || []);
     } catch (err: any) {
       toast.error(err.message);
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (location) {
+      fetchNearby(location.lat, location.lng, activeCategory, activeMobility);
+    }
+  }, [activeCategory, activeMobility]);
 
   const requestLocation = () => {
     setIsLoading(true);
@@ -161,7 +173,7 @@ function App() {
     );
   }
 
-  if (location && vulcanizers !== null) {
+  if (location && artisans !== null) {
     return (
       <>
         <div className="flex flex-col h-screen bg-slate-50 dark:bg-slate-950 md:flex-row overflow-hidden relative">
@@ -170,28 +182,71 @@ function App() {
               <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
             </div>
           }>
+            {/* Filters Bar */}
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 w-full max-w-lg px-4 hidden md:flex flex-col gap-2">
+              <div className="flex gap-2 overflow-x-auto no-scrollbar bg-[#0F172A]/80 backdrop-blur-xl p-2.5 rounded-2xl border border-slate-700/50 shadow-2xl">
+                {[
+                  { id: 'all', label: 'All' },
+                  { id: 'vulcanizer', label: 'Vulcanizer' },
+                  { id: 'tailor', label: 'Tailor' },
+                  { id: 'cobbler', label: 'Cobbler' },
+                  { id: 'nail_cutter', label: 'Nails' },
+                  { id: 'barber', label: 'Barber' }
+                ].map(cat => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setActiveCategory(cat.id)}
+                    className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${activeCategory === cat.id ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800'}`}
+                  >
+                    <span>{CATEGORY_ICONS[cat.id]}</span> {cat.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex justify-center gap-2">
+                <div className="bg-[#0F172A]/80 backdrop-blur-xl p-1.5 rounded-full border border-slate-700/50 shadow-xl flex">
+                  {[
+                    { id: 'all', label: 'Any Mobility' },
+                    { id: 'STATIC', label: 'Fixed Shops' },
+                    { id: 'MOBILE', label: 'Mobile/Walking' }
+                  ].map(mob => (
+                    <button
+                      key={mob.id}
+                      onClick={() => setActiveMobility(mob.id)}
+                      className={`px-4 py-1 rounded-full text-xs font-medium transition-colors ${activeMobility === mob.id ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`}
+                    >
+                      {mob.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             {/* Full screen map on mobile, half screen on desktop */}
             <div className="flex-1 relative h-full w-full z-0">
-              <VulcanizerMap
+              <ArtisanMap
                 userLocation={location}
-                vulcanizers={vulcanizers}
+                artisans={artisans}
                 activeRoute={activeRoute}
                 routingMode={routingMode}
                 routeDetails={routeDetails}
                 routeDestination={routeDestination}
                 isDark={isDark}
+                selectedArtisan={artisans.find(a => a.id === selectedArtisanId) || null}
+                onPinClick={handlePinClick}
               />
             </div>
 
             {/* Desktop List (hidden on mobile) */}
-            <div className="hidden md:flex w-[400px] lg:w-[480px] bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 h-full overflow-y-auto shadow-xl z-10 flex-col">
-              <VulcanizerList
-                vulcanizers={vulcanizers}
+            <div className="hidden md:flex w-[400px] lg:w-[480px] bg-[#060B18] border-l border-slate-800/80 h-full overflow-y-auto shadow-2xl z-10 flex-col">
+              <ArtisanList
+                artisans={artisans}
                 onShowRoute={(dest) => fetchRoute(dest, routingMode)}
                 onCancelRoute={handleCancelRoute}
                 routingMode={routingMode}
                 onRoutingModeChange={handleRoutingModeChange}
                 routeDestination={routeDestination}
+                selectedArtisanId={selectedArtisanId}
               />
             </div>
 
@@ -204,8 +259,45 @@ function App() {
                 onSnapChange={setSnap}
                 hideBackdrop={true}
               >
-                <VulcanizerList
-                  vulcanizers={vulcanizers}
+                <div className="px-4 pb-2 border-b border-slate-800 flex flex-col gap-2">
+                  <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 pt-2">
+                    {[
+                      { id: 'all', label: 'All' },
+                      { id: 'vulcanizer', label: 'Vulcanizer' },
+                      { id: 'tailor', label: 'Tailor' },
+                      { id: 'cobbler', label: 'Cobbler' },
+                      { id: 'nail_cutter', label: 'Nails' },
+                      { id: 'barber', label: 'Barber' }
+                    ].map(cat => (
+                      <button
+                        key={cat.id}
+                        onClick={() => setActiveCategory(cat.id)}
+                        className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ${activeCategory === cat.id ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-300'}`}
+                      >
+                        <span>{CATEGORY_ICONS[cat.id]}</span> {cat.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex justify-center gap-2 mb-2">
+                    <div className="bg-slate-800 p-1 rounded-full flex w-full">
+                      {[
+                        { id: 'all', label: 'Any' },
+                        { id: 'STATIC', label: 'Shops' },
+                        { id: 'MOBILE', label: 'Mobile' }
+                      ].map(mob => (
+                        <button
+                          key={mob.id}
+                          onClick={() => setActiveMobility(mob.id)}
+                          className={`flex-1 py-1 rounded-full text-xs font-medium transition-colors ${activeMobility === mob.id ? 'bg-slate-600 text-white' : 'text-slate-400'}`}
+                        >
+                          {mob.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <ArtisanList
+                  artisans={artisans}
                   onShowRoute={(dest) => {
                     fetchRoute(dest, routingMode);
                     setSnap(0.2); // Snap down when they click to see the route on map
@@ -214,6 +306,7 @@ function App() {
                   routingMode={routingMode}
                   onRoutingModeChange={handleRoutingModeChange}
                   routeDestination={routeDestination}
+                  selectedArtisanId={selectedArtisanId}
                 />
               </BottomSheet>
             </div>
@@ -231,20 +324,20 @@ function App() {
       <div className="max-w-[420px] w-full bg-[#0F172A]/90 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-slate-800/80 relative z-10">
         <div className="p-10 text-center flex flex-col items-center">
           <div className="w-20 h-20 bg-[#172554] rounded-full flex flex-col items-center justify-center mx-auto mb-4 shadow-[0_0_20px_rgba(37,99,235,0.1)] border border-blue-900/50 overflow-hidden text-blue-400">
-            <TireRepairIcon className="w-12 h-12" />
+            <MapPin className="w-12 h-12" />
           </div>
 
           <div className="flex items-center justify-center text-3xl font-bold tracking-tight mb-8">
-            <span className="text-white">pump&nbsp;</span>
-            <span className="text-[#3b82f6]">me</span>
+            {/* <span className="text-white">pump&nbsp;</span> */}
+            <span className="text-[#3b82f6]">Artisian</span>
           </div>
 
           <h1 className="text-[2.25rem] font-extrabold text-white mb-4 tracking-tight leading-tight">
-            You dey find vulcanizer abi?
+            A databank of service providers
           </h1>
 
           <p className="text-slate-400 mb-8 text-lg leading-relaxed">
-            Flat tire? Pump a ball?, We'll instantly locate the closest vulcanizers using your current location.
+            Flat tire? Torn shirt? Bad shoe?, We'll instantly locate the closest vulcanizers, tailors, and cobblers using your current location.
           </p>
 
           <button
@@ -256,7 +349,7 @@ function App() {
 
           <div className="w-full mt-6">
             <p className="text-slate-500 text-xs italic">
-              We only use your location to find vulcanizers near you. It's not stored, so relax.
+              We only use your location to find artisians near you. It's not stored, so relax.
             </p>
           </div>
         </div>
@@ -281,7 +374,7 @@ function App() {
           </p>
           <h2 className="text-2xl font-bold text-white mb-4">About the Project</h2>
           <p className="mb-8 leading-relaxed">
-            Pump Me is an open-source project that helps drivers quickly locate nearby roadside vulcanizers during tire emergencies. It was built to prove that some of the most meaningful software isn't measured by revenue, but by the people it helps.
+            Artisian is an open-source project that helps people quickly locate nearby vulcanizers, tailors, and cobblers during emergencies. It was built to prove that some of the most meaningful software isn't measured by revenue, but by the people it helps.
           </p>
           <h3 className="text-lg font-semibold text-white mb-4">Contributors</h3>
           <ul className="space-y-6">

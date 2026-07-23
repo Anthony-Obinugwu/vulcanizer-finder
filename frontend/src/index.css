@@ -44,3 +44,23 @@
     animation: none !important;
   }
 }
+
+/* Mapbox GL Popup Overrides for Glassmorphism */
+.mapbox-popup-dark .mapboxgl-popup-content {
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  pointer-events: none !important; /* Let our inner div handle pointer events */
+}
+.mapbox-popup-dark .mapboxgl-popup-content > div {
+  pointer-events: auto !important;
+}
+
+.mapbox-popup-dark .mapboxgl-popup-tip {
+  border-top-color: rgba(15, 23, 42, 0.95) !important; /* Tailwind #0F172A */
+  border-bottom-color: rgba(15, 23, 42, 0.95) !important;
+}
+
+.mapbox-popup-dark .mapboxgl-popup-close-button {
+  display: none !important; /* We handle closing ourselves */
+}
