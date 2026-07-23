@@ -152,18 +152,22 @@ export default function ManageArtisansTab({ adminPin }: { adminPin: string }) {
 
       {/* Edit Modal Overlay */}
       {editingArtisan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-[#0F172A] border border-slate-800 w-full max-w-2xl rounded-3xl shadow-2xl my-8 relative">
-            <button 
-              onClick={() => setEditingArtisan(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white p-2 rounded-full hover:bg-slate-800 transition-colors z-10"
-            >
-              <X className="w-5 h-5" />
-            </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#0F172A] border border-slate-800 w-full max-w-2xl rounded-3xl shadow-2xl relative max-h-[90vh] flex flex-col">
             
-            <div className="p-8">
-              <h2 className="text-2xl font-bold text-white mb-6">Edit Artisan</h2>
-              
+            {/* Sticky Header inside Modal */}
+            <div className="flex justify-between items-center p-5 sm:p-8 pb-4 border-b border-slate-800 shrink-0">
+              <h2 className="text-2xl font-bold text-white pr-4">Edit Artisan</h2>
+              <button 
+                onClick={() => setEditingArtisan(null)}
+                className="text-slate-400 hover:text-white p-2 rounded-full hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            {/* Scrollable Form Body */}
+            <div className="p-5 sm:p-8 overflow-y-auto">
               <form onSubmit={handleUpdate} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Basic Info */}
